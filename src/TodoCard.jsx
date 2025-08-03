@@ -29,7 +29,7 @@ export default function TodoCard({ todos, removeItem, updateItem }) {
       {todos.map((t) => (
         <Card key={t.id} className="mb-2 p-2">
           <CardContent className="text-lg flex justify-between items-center flex-wrap">
-            {t.id}:{t.title}
+            {t.title}
             <div>
               <Popover>
                 <PopoverTrigger asChild>
@@ -39,17 +39,23 @@ export default function TodoCard({ todos, removeItem, updateItem }) {
                 </PopoverTrigger>
                 <PopoverContent>
                   <div className="flex justify-start items-center">
-                    <Button variant="outline" className="mr-2" onClick={() => {
-                      if (inputs[t.id] && inputs[t.id].trim().length > 0) {
-                        updateItem(t.id, inputs[t.id]);
-                      }
-                    }}>
-                      <ArrowUpFromLine className="size-6"/>
-
+                    <Button
+                      variant="outline"
+                      className="mr-2"
+                      onClick={() => {
+                        if (inputs[t.id] && inputs[t.id].trim().length > 0) {
+                          updateItem(t.id, inputs[t.id]);
+                        }
+                      }}
+                    >
+                      <ArrowUpFromLine className="size-6" />
                     </Button>
-                    <Input value={inputs[t.id] || ""} onChange={(e) => {
-                      setInputs({ ...inputs, [t.id]: e.target.value });
-                    }}/>
+                    <Input
+                      value={inputs[t.id] || ""}
+                      onChange={(e) => {
+                        setInputs({ ...inputs, [t.id]: e.target.value });
+                      }}
+                    />
                   </div>
                 </PopoverContent>
               </Popover>
