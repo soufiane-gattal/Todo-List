@@ -1,82 +1,102 @@
 import "./App.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import TodoCard from "./TodoCard";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CirclePlus } from 'lucide-react';
-import { Input } from "@/components/ui/input"
-
+import { CirclePlus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 function App() {
-   
-  const  [todoState,setTodoState] = useState(() => {
-  const stored = localStorage.getItem("todos");
-  return stored ? JSON.parse(stored) : [];
-});
+  const [todos, setTodos] = useState(() => {
+    const stored = localStorage.getItem("todos");
+    return stored ? JSON.parse(stored) : [];
+  });
 
-  let nextId = useRef(1)
+  const [input, setInput] = useState("");
+  const [filter, setFilter] = useState("all");
 
-  const [inputState,setInputState] = useState("");
+  function addTodo() {
+    if (input.trim() === "") return;
 
+    const newId = todos.length > 0 ? Math.max(...todos.map(t => t.id)) + 1 : 1;
 
-  function AddTodo(){
-    if (inputState.trim() === "") return;
     const newTodo = {
-      id: nextId.current,
-      title: inputState,
-      state: "Waiting"
+      id: newId,
+      title: input,
+      state: "Pending",
     };
-    nextId.current++;
-    const updateTodos = [...todoState,newTodo]
-    setTodoState(updateTodos)
-    setInputState("")
-    
+
+    setTodos([...todos, newTodo]);
+    setInput("");
   }
-
-
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todoState));
-  }, [todoState]);
-
 
   function removeItem(id) {
-    const updatedTodos = todoState.filter((t) => t.id !== id);
-    setTodoState(updatedTodos); 
-  }
-  function updateItem(id, updateTitle) {
-    const updatedTodos = todoState.map((t) =>
-      t.id === id ? { ...t, title: updateTitle } : t
-    );
-    setTodoState(updatedTodos);
+    setTodos(todos.filter(t => t.id !== id));
   }
 
+  function updateItem(id, newTitle) {
+    setTodos(todos.map(t => t.id === id ? { ...t, title: newTitle } : t));
+  }
+
+  function markAsDone(id) {
+    setTodos(todos.map(t => t.id === id ? { ...t, state: "Done" } : t));
+  }
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
+
+  const filteredTodos = todos.filter(t => {
+    if (filter === "done") return t.state === "Done";
+    if (filter === "pending") return t.state !== "Done";
+    return true;
+  });
 
   return (
-    <div className="w-full bg-background flex items-center justify-center ">
-      <Card className="w-full max-w-sm bg-secondary mt-40">
-        <CardHeader className="items-center text-center">
-          <CardTitle className="text-3xl">My Todo</CardTitle>
+    <div className="w-full min-h-screen bg-background flex items-center justify-center">
+      <Card className="w-full max-w-md bg-secondary mt-20">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl">Todo List</CardTitle>
         </CardHeader>
 
         <CardContent>
-          <TodoCard todos = {todoState} removeItem={removeItem} updateItem={updateItem} />
+          <Tabs defaultValue="all" className="w-full mb-4" onValueChange={setFilter}>
+            <TabsList className="grid grid-cols-3">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="done">Done</TabsTrigger>
+              <TabsTrigger value="pending">Pending</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <TodoCard
+            todos={filteredTodos}
+            removeItem={removeItem}
+            updateItem={updateItem}
+            markAsDone={markAsDone}
+          />
         </CardContent>
 
-        <CardFooter>
-          <Button variant='outline' className={'w-fit m-2'} onClick={AddTodo}>
-            <CirclePlus className="size-6"/>
+        <CardFooter className="flex gap-2">
+          <Button onClick={addTodo}>
+            <CirclePlus className="size-5" />
           </Button>
-          <Input className={"text-2xl"} value={inputState} onChange={(e)=>{
-            setInputState(e.target.value)
-          }}/>
+          <Input
+            placeholder="New task"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="text-lg"
+          />
         </CardFooter>
       </Card>
     </div>
