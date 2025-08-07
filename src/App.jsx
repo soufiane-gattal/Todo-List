@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import TodoCard from "./TodoCard";
 import {
   Card,
@@ -16,6 +16,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
 
 function App() {
   const [todos, setTodos] = useState(() => {
@@ -39,32 +41,39 @@ function App() {
 
     setTodos([...todos, newTodo]);
     setInput("");
+    toast("the item added successefuly")
   }
 
   function removeItem(id) {
     setTodos(todos.filter(t => t.id !== id));
+    toast("the item removed successefuly")
   }
 
   function updateItem(id, newTitle) {
     setTodos(todos.map(t => t.id === id ? { ...t, title: newTitle } : t));
+    toast("the item updated successefuly")
   }
 
   function markAsDone(id) {
     setTodos(todos.map(t => t.id === id ? { ...t, state: "Done" } : t));
+    toast("the todo completed")
   }
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
 
-  const filteredTodos = todos.filter(t => {
-    if (filter === "done") return t.state === "Done";
-    if (filter === "pending") return t.state !== "Done";
-    return true;
-  });
+  const filteredTodos =  useMemo(()=>{ return todos.filter(t => {
+   if (filter === "done") return t.state === "Done";
+   if (filter === "pending") return t.state !== "Done";
+   return true;
+ })
+ },[todos,filter]);
+
 
   return (
     <div className="w-full min-h-screen bg-background flex items-center justify-center">
+      <Toaster/>
       <Card className="w-full max-w-md bg-secondary mt-20">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl">Todo List</CardTitle>
